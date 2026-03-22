@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 
 const STORAGE_KEY = 'gymlog_workouts'
 
@@ -7,26 +7,30 @@ function load() {
   catch { return [] }
 }
 
+function save(data) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)) }
+  catch (e) { console.error('保存失敗:', e) }
+}
+
 export function useWorkouts() {
   const [workouts, setWorkouts] = useState(load)
+
+  // workoutsが変わるたびに必ずlocalStorageに同期
+  useEffect(() => {
+    save(workouts)
+  }, [workouts])
 
   const saveWorkout = useCallback((workout) => {
     setWorkouts(prev => {
       const existing = prev.findIndex(w => w.id === workout.id)
-      const next = existing >= 0
+      return existing >= 0
         ? prev.map((w, i) => i === existing ? workout : w)
         : [workout, ...prev]
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-      return next
     })
   }, [])
 
   const deleteWorkout = useCallback((id) => {
-    setWorkouts(prev => {
-      const next = prev.filter(w => w.id !== id)
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-      return next
-    })
+    setWorkouts(prev => prev.filter(w => w.id !== id))
   }, [])
 
   // 種目ごとの最高重量（PR）を計算

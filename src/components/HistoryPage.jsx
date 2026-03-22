@@ -15,6 +15,14 @@ export default function HistoryPage({ workouts, deleteWorkout }) {
       total + ex.sets.reduce((s, set) =>
         s + (parseFloat(set.weight) || 0) * (parseInt(set.reps) || 0), 0), 0)
 
+  const calcVolumeByCategory = (workout) =>
+    workout.exercises.reduce((acc, ex) => {
+      const vol = ex.sets.reduce((s, set) =>
+        s + (parseFloat(set.weight) || 0) * (parseInt(set.reps) || 0), 0)
+      if (vol > 0) acc[ex.category] = (acc[ex.category] || 0) + vol
+      return acc
+    }, {})
+
   if (workouts.length === 0) {
     return (
       <div className="page">
@@ -38,6 +46,7 @@ export default function HistoryPage({ workouts, deleteWorkout }) {
 
       {workouts.map(workout => {
         const volume = calcVolume(workout)
+        const volumeByCategory = calcVolumeByCategory(workout)
         const isOpen = expanded === workout.id
         return (
           <div key={workout.id} className="history-card">
@@ -76,9 +85,23 @@ export default function HistoryPage({ workouts, deleteWorkout }) {
                     </div>
                   </div>
                 ))}
+                <div className="history-cat-volumes">
+                  {Object.entries(volumeByCategory).map(([cat, vol]) => {
+                    const colors = CATEGORY_COLORS[cat] || CATEGORY_COLORS['その他']
+                    return (
+                      <div key={cat} className="cat-volume-chip" style={{ background: colors.bg, borderColor: colors.border }}>
+                        <span className="cat-volume-label" style={{ color: colors.text }}>{cat}</span>
+                        <span className="cat-volume-num" style={{ color: colors.text }}>
+                          {vol.toLocaleString()}<span className="cat-volume-unit">kg</span>
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+
                 <div className="history-footer">
                   <span className="history-total">
-                    総ボリューム: <strong>{volume.toLocaleString()} kg</strong>
+                    合計: <strong>{volume.toLocaleString()} kg</strong>
                   </span>
                   {confirmDelete === workout.id ? (
                     <div className="confirm-delete">
