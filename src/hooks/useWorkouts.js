@@ -10,26 +10,24 @@ function load() {
 export function useWorkouts() {
   const [workouts, setWorkouts] = useState(load)
 
-  const save = useCallback((next) => {
-    setWorkouts(next)
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+  const saveWorkout = useCallback((workout) => {
+    setWorkouts(prev => {
+      const existing = prev.findIndex(w => w.id === workout.id)
+      const next = existing >= 0
+        ? prev.map((w, i) => i === existing ? workout : w)
+        : [workout, ...prev]
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+      return next
+    })
   }, [])
 
-  const saveWorkout = useCallback((workout) => {
-    save(prev => {
-      const existing = prev.findIndex(w => w.id === workout.id)
-      if (existing >= 0) {
-        const next = [...prev]
-        next[existing] = workout
-        return next
-      }
-      return [workout, ...prev]
-    })
-  }, [save])
-
   const deleteWorkout = useCallback((id) => {
-    save(prev => prev.filter(w => w.id !== id))
-  }, [save])
+    setWorkouts(prev => {
+      const next = prev.filter(w => w.id !== id)
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+      return next
+    })
+  }, [])
 
   // 種目ごとの最高重量（PR）を計算
   const getPRs = useCallback(() => {
