@@ -53,13 +53,18 @@ export default function HistoryPage({ workouts, deleteWorkout }) {
             <button className="history-summary" onClick={() => setExpanded(isOpen ? null : workout.id)}>
               <div className="history-left">
                 <span className="history-date">{formatDate(workout.date)}</span>
-                <div className="history-tags">
-                  {[...new Set(workout.exercises.map(e => e.category))].map(cat => (
-                    <span key={cat} className="mini-badge" style={{
-                      background: CATEGORY_COLORS[cat]?.bg,
-                      color: CATEGORY_COLORS[cat]?.text
-                    }}>{cat}</span>
-                  ))}
+                <div className="history-cat-volumes history-cat-volumes--inline">
+                  {Object.entries(volumeByCategory).map(([cat, vol]) => {
+                    const colors = CATEGORY_COLORS[cat] || CATEGORY_COLORS['その他']
+                    return (
+                      <div key={cat} className="cat-volume-chip cat-volume-chip--sm" style={{ background: colors.bg, borderColor: colors.border }}>
+                        <span className="cat-volume-label" style={{ color: colors.text }}>{cat}</span>
+                        <span className="cat-volume-num" style={{ color: colors.text }}>
+                          {vol.toLocaleString()}<span className="cat-volume-unit">kg</span>
+                        </span>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
               <div className="history-right">
@@ -85,20 +90,6 @@ export default function HistoryPage({ workouts, deleteWorkout }) {
                     </div>
                   </div>
                 ))}
-                <div className="history-cat-volumes">
-                  {Object.entries(volumeByCategory).map(([cat, vol]) => {
-                    const colors = CATEGORY_COLORS[cat] || CATEGORY_COLORS['その他']
-                    return (
-                      <div key={cat} className="cat-volume-chip" style={{ background: colors.bg, borderColor: colors.border }}>
-                        <span className="cat-volume-label" style={{ color: colors.text }}>{cat}</span>
-                        <span className="cat-volume-num" style={{ color: colors.text }}>
-                          {vol.toLocaleString()}<span className="cat-volume-unit">kg</span>
-                        </span>
-                      </div>
-                    )
-                  })}
-                </div>
-
                 <div className="history-footer">
                   <span className="history-total">
                     合計: <strong>{volume.toLocaleString()} kg</strong>

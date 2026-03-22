@@ -486,6 +486,23 @@ body {
   border-top: 1px solid var(--border);
 }
 
+.history-cat-volumes--inline {
+  padding: 4px 0 0;
+  border-top: none;
+}
+
+.cat-volume-chip--sm {
+  padding: 4px 10px !important;
+}
+
+.cat-volume-chip--sm .cat-volume-label {
+  font-size: 0.62rem !important;
+}
+
+.cat-volume-chip--sm .cat-volume-num {
+  font-size: 0.85rem !important;
+}
+
 .history-footer {
   display: flex;
   justify-content: space-between;
