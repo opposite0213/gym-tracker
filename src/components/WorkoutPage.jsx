@@ -27,9 +27,18 @@ export default function WorkoutPage({ saveWorkout, getLastWorkout, getPRs }) {
   }
 
   function addSet(exId) {
-    setExercises(prev => prev.map(ex => ex.id !== exId ? ex : {
-      ...ex,
-      sets: [...ex.sets, { id: Date.now(), weight: '', reps: '', done: false }]
+    setExercises(prev => prev.map(ex => {
+      if (ex.id !== exId) return ex
+      const last = ex.sets[ex.sets.length - 1]
+      return {
+        ...ex,
+        sets: [...ex.sets, {
+          id: Date.now(),
+          weight: last?.weight ?? '',
+          reps: last?.reps ?? '',
+          done: false
+        }]
+      }
     }))
   }
 
