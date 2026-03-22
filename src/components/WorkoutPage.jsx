@@ -88,6 +88,13 @@ export default function WorkoutPage({ saveWorkout, getLastWorkout, getPRs }) {
     total + ex.sets.reduce((s, set) =>
       s + (parseFloat(set.weight) || 0) * (parseInt(set.reps) || 0), 0), 0)
 
+  const volumeByCategory = exercises.reduce((acc, ex) => {
+    const vol = ex.sets.reduce((s, set) =>
+      s + (parseFloat(set.weight) || 0) * (parseInt(set.reps) || 0), 0)
+    if (vol > 0) acc[ex.category] = (acc[ex.category] || 0) + vol
+    return acc
+  }, {})
+
   const formatDate = (d) => {
     const dt = new Date(d)
     return `${dt.getMonth() + 1}月${dt.getDate()}日 (${['日','月','火','水','木','金','土'][dt.getDay()]})`
@@ -118,10 +125,24 @@ export default function WorkoutPage({ saveWorkout, getLastWorkout, getPRs }) {
         {totalVolume > 0 && (
           <div className="volume-badge">
             <span className="volume-num">{totalVolume.toLocaleString()}</span>
-            <span className="volume-unit">kg vol</span>
+            <span className="volume-unit">kg total</span>
           </div>
         )}
       </div>
+
+      {Object.keys(volumeByCategory).length > 0 && (
+        <div className="cat-volume-row">
+          {Object.entries(volumeByCategory).map(([cat, vol]) => {
+            const colors = CATEGORY_COLORS[cat] || CATEGORY_COLORS['その他']
+            return (
+              <div key={cat} className="cat-volume-chip" style={{ background: colors.bg, borderColor: colors.border }}>
+                <span className="cat-volume-label" style={{ color: colors.text }}>{cat}</span>
+                <span className="cat-volume-num" style={{ color: colors.text }}>{vol.toLocaleString()}<span className="cat-volume-unit">kg</span></span>
+              </div>
+            )
+          })}
+        </div>
+      )}
 
       {exercises.length === 0 && (
         <div className="empty-state">
