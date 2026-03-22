@@ -17,9 +17,11 @@ export const PRESET_EXERCISES = [
   { name: 'ダンベルカール',    category: '腕' },
   { name: 'トライセプスプッシュダウン', category: '腕' },
   { name: 'スクワット',        category: '脚' },
+  { name: '自重スクワット',    category: '脚', bodyweight: true },
   { name: 'レッグプレス',      category: '脚' },
   { name: 'レッグカール',      category: '脚' },
   { name: 'カーフレイズ',      category: '脚' },
+  { name: 'ダンベルプレス',    category: '胸' },
 ]
 
 export const CATEGORY_COLORS = {

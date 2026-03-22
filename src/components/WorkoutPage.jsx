@@ -15,6 +15,7 @@ export default function WorkoutPage({ saveWorkout, getLastWorkout, getPRs }) {
       id: Date.now(),
       name: preset.name,
       category: preset.category,
+      bodyweight: preset.bodyweight || false,
       sets: [{ id: Date.now() + 1, weight: '', reps: '', done: false }]
     }])
     setShowExPicker(false)
@@ -176,7 +177,7 @@ export default function WorkoutPage({ saveWorkout, getLastWorkout, getPRs }) {
 
             <div className="sets-header">
               <span>セット</span>
-              <span>重量 (kg)</span>
+              {!ex.bodyweight && <span>重量 (kg)</span>}
               <span>回数</span>
               <span></span>
             </div>
@@ -189,14 +190,16 @@ export default function WorkoutPage({ saveWorkout, getLastWorkout, getPRs }) {
                 >
                   {i + 1}
                 </button>
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  className="set-input"
-                  value={set.weight}
-                  placeholder={pr ? String(pr.weight) : '0'}
-                  onChange={e => updateSet(ex.id, set.id, 'weight', e.target.value)}
-                />
+                {!ex.bodyweight && (
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    className="set-input"
+                    value={set.weight}
+                    placeholder={pr ? String(pr.weight) : '0'}
+                    onChange={e => updateSet(ex.id, set.id, 'weight', e.target.value)}
+                  />
+                )}
                 <input
                   type="number"
                   inputMode="numeric"
