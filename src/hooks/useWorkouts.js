@@ -1,39 +1,48 @@
 import { useState, useCallback, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
 
-const STORAGE_KEY = 'gymlog_workouts'
+export function useWorkouts(userId) {
+  const [workouts, setWorkouts] = useState([])
+  const [loading, setLoading] = useState(true)
 
-function load() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [] }
-  catch { return [] }
-}
-
-function save(data) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)) }
-  catch (e) { console.error('保存失敗:', e) }
-}
-
-export function useWorkouts() {
-  const [workouts, setWorkouts] = useState(load)
-
-  // workoutsが変わるたびに必ずlocalStorageに同期
+  // Supabaseからデータを取得
   useEffect(() => {
-    save(workouts)
-  }, [workouts])
+    if (!userId) return
+    setLoading(true)
+    supabase
+      .from('workouts')
+      .select('*')
+      .eq('user_id', userId)
+      .order('date', { ascending: false })
+      .then(({ data, error }) => {
+        if (!error && data) setWorkouts(data)
+        setLoading(false)
+      })
+  }, [userId])
 
-  const saveWorkout = useCallback((workout) => {
-    setWorkouts(prev => {
-      const existing = prev.findIndex(w => w.id === workout.id)
-      return existing >= 0
-        ? prev.map((w, i) => i === existing ? workout : w)
-        : [workout, ...prev]
-    })
-  }, [])
+  const saveWorkout = useCallback(async (workout) => {
+    const record = { ...workout, user_id: userId }
+    const { data, error } = await supabase
+      .from('workouts')
+      .upsert(record, { onConflict: 'id' })
+      .select()
+      .single()
 
-  const deleteWorkout = useCallback((id) => {
+    if (!error && data) {
+      setWorkouts(prev => {
+        const exists = prev.findIndex(w => w.id === data.id)
+        return exists >= 0
+          ? prev.map(w => w.id === data.id ? data : w)
+          : [data, ...prev]
+      })
+    }
+  }, [userId])
+
+  const deleteWorkout = useCallback(async (id) => {
+    await supabase.from('workouts').delete().eq('id', id)
     setWorkouts(prev => prev.filter(w => w.id !== id))
   }, [])
 
-  // 種目ごとの最高重量（PR）を計算
   const getPRs = useCallback(() => {
     const prs = {}
     workouts.forEach(workout => {
@@ -50,10 +59,9 @@ export function useWorkouts() {
     return prs
   }, [workouts])
 
-  // 直近のワークアウト（コピー用）
   const getLastWorkout = useCallback(() => {
     return workouts[0] || null
   }, [workouts])
 
-  return { workouts, saveWorkout, deleteWorkout, getPRs, getLastWorkout }
+  return { workouts, loading, saveWorkout, deleteWorkout, getPRs, getLastWorkout }
 }
